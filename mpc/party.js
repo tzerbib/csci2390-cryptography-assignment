@@ -19,7 +19,7 @@ function connect() {
     // If you solve the bonus question, consider making this a smaller prime number,
     // e.g. 13,
     // and see what impact this has on performance ;)
-    Zp: 16777729,
+    Zp: 16777729
   });
 }
 
