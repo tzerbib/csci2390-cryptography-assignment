@@ -1,0 +1,3 @@
+[submodule "checklist/checklist"]
+	path = checklist/checklist
+	url = https://github.com/KinanBab/checklist.git
