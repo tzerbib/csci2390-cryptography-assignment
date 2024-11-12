@@ -20,6 +20,7 @@ var KEYS = []string{
 }
 
 // Transform key into an index in [0,4)
+// TODO make a better version of this
 func key_to_index(key string) int {
   for i, e := range KEYS {
     if e == key {
@@ -41,7 +42,7 @@ func main() {
   config.UseTLS = false;
   pirtype, _ := pir.PirTypeString("Punc")
   config.PirType = pirtype
-	config.NumRows = len(KEYS)
+	config.NumRows = 4
 	config.RowLen = VALUE_LEN;
 	config.Updatable = false;
 	config.UpdateSize = 0;

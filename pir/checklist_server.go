@@ -27,6 +27,7 @@ var KEYS = []string{
 }
 
 // Transform key into an index in [0,4)
+// TODO make a better version of this
 func key_to_index(key string) int {
   for i, e := range KEYS {
     if e == key {
@@ -39,7 +40,8 @@ func key_to_index(key string) int {
 // Construct the database the way checklist understands it:
 // a map from an index in [0,4) to a 7-byte value.
 func database() []RowIndexVal {
-  var result []RowIndexVal  
+  var result []RowIndexVal
+  // TODO: you may need to address gaps here
   for k, v := range DB {
     result = append(result, RowIndexVal { Index: key_to_index(k), Value: []byte(v) })
   }
@@ -53,7 +55,7 @@ func main() {
   config.UseTLS = false;
   pirtype, _ := pir.PirTypeString("Punc")
   config.PirType = pirtype
-	config.NumRows = len(KEYS)
+	config.NumRows = 4
 	config.RowLen = VALUE_LEN;
 	config.Updatable = false;
 	config.UpdateSize = 0;
