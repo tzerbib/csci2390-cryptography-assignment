@@ -10,7 +10,7 @@ Your implementation goes in `party.js`. The file contains more instructions.
 
 ## Running your solution
 
-Make sure you have nodejs installed, we tested this using node `v14.18.1`.
+Make sure you have nodejs installed. We tested this using node `v14.18.1`.
 
 First, install the required dependencies:
 ```

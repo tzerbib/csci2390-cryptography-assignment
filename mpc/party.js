@@ -45,7 +45,7 @@ async function start(jiffClient) {
       console.log(OPTIONS[i], output);
   }
   
-  // disconnect safetly.
+  // disconnect safely.
   jiffClient.disconnect(true, true);
 }
 
