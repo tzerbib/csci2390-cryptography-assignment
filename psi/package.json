@@ -1,0 +1,12 @@
+{
+  "name": "psi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "client.js",
+  "scripts": {},
+  "author": "Kinan Dak Albab",
+  "license": "MIT",
+  "dependencies": {
+    "oprf": "^2.0.0"
+  }
+}
