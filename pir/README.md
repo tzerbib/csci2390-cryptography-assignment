@@ -13,9 +13,11 @@ This homework uses a state-of-the-art PIR protocol, checklist, written in golang
 
 ## Running the protocol
 
-Make sure you have go installed. We tested this using go `v1.13` and `v1.16`.
+Make sure you have go installed. We tested this using go `v1.13` and `v1.16`. 
 
-Run `go build` to compile the code, if you see some warnings, ignore them.
+Note that you need an x86 machine to do this part of the assignment. If you don't own one, consider ssh-ing into Brown CS Department machines ([see this link](https://cs.brown.edu/about/system/connecting/ssh/)).
+
+First, from the top-level repository, run `git submodule update --init`; then, run `go build` to compile the code, if you see some warnings, ignore them.
 
 After building, execute `./run.sh` to run a simple version of the protocol.
 This will execute a single query against a fixed database with 4 elements.
