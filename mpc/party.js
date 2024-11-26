@@ -20,6 +20,7 @@ function connect() {
     // e.g. 13,
     // and see what impact this has on performance ;)
     Zp: 16777729
+    // Zp: 13
   });
 }
 
@@ -29,20 +30,38 @@ async function start(jiffClient) {
   // Iterate over every option
   for (let i = 0; i < OPTIONS.length; i++) {
       // Secret share 1 if this matches the user's vote, 0 otherwise.
-      // ...
+      let vote = (i == OPTIONS.indexOf(voteFor))? 1 : 0
+      let shares = jiffClient.share(vote);
 
       // Bonus question solution goes here: do sanity check to make sure none
       // of the users are cheating with their votes.
-      // ...
+      for(let client = 1; client <= jiffClient.party_count; ++client){
+        let check_0 = await jiffClient.open(shares[client].eq(0));
+        let check_1 = await jiffClient.open(shares[client].eq(1));
+        let correct = check_0 || check_1;
+        if(!correct){
+          console.log("\tIncorrect vote of client", client, "for", OPTIONS[i]);
+        }
+      }
 
       // Sum all the vote shares for this option
       // Look at https://github.com/multiparty/jiff-standalone-example/blob/a4aa88d562024b224dfef290a019b3c1dff33e10/party.js#L39
-      // ...
+      let sum = shares[1];
+      for (let i = 2; i <= jiffClient.party_count; i++) {
+        sum = sum.sadd(shares[i]);
+      }
   
       // Reveal the total vote tally for this option and print it.
       // Look at https://github.com/multiparty/jiff-standalone-example/blob/a4aa88d562024b224dfef290a019b3c1dff33e10/party.js#L45
-      const output = "?";
-      console.log(OPTIONS[i], output);
+      const output = await jiffClient.open(sum);
+      console.log(OPTIONS[i], output.toString());
+
+      // Inspect the share for option DuneBrothers, for client 1
+      // let inspectedOption = "DuneBrothers"
+      // let inspectedClient = 1; // Client id start at 1, not 0!
+      // if(OPTIONS[i] == inspectedOption){
+      //   console.log('value of share', await shares[inspectedClient].value);
+      // }
   }
   
   // disconnect safely.
