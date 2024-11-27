@@ -105,3 +105,30 @@ which considerably slows it down.
 
 Lower values of the modulo induce faster computation than larger values.
 
+
+# Private Set Intersection (PSI)  
+
+> *Question 4: How much computation work does the client and server perform?
+> Specifically, how many elliptic curve operations, i.e. hashing and scalarMult,
+> does each perform? How many points are exchanged over the network? Can any of
+> this happen ahead of time, e.g. before the client connects to the server
+> or issues a query?*
+
+The client performs one hashing and one scalarMult operation on his password,
+before sending to the server. After receiving back from the server,
+they have to perform another scalaMult to unmask their password.
+Thus, in total, clients perform 3 elliptic curve operations
+per Private Intersection Set request.
+
+As for the server, it has to hash and mask all its bad passwords once, as well
+as mask the request sent by the client.
+However, hashing and masking all the stored password only has to be done once,
+and thus could be set off the critical path of any request. The server,
+thus only has to perform one masking per client request.
+
+The client sends one point over the network, while the server sends back
+this point, as well as all the ones corresponding to the stored password.
+
+
+
+

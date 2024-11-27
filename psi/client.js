@@ -46,12 +46,12 @@ function makeQuery(password) {
     // Make the mask a global variable so you can use it in handleResponse() too
     global.mask;
     
-    // Make a random mask.
+    // Make a random mask. (step 2)
     global.mask = oprf.generateRandomScalar();
     
     // Hash the password to an elliptic curve point, then mask it.
-    const point = oprf.hashToPoint(password);
-    const maskedPoint = oprf.scalarMult(point, global.mask);
+    const point = oprf.hashToPoint(password); // (step 1)
+    const maskedPoint = oprf.scalarMult(point, global.mask); // (step 3)
     
     // Encode the point as a string so it can be sent to server easily.
     return oprf.encodePoint(maskedPoint, 'ASCII');
@@ -60,14 +60,23 @@ function makeQuery(password) {
 // Handle the response.
 // The response is exactly the same object as what you return from server.js#psi()
 function handleResponse(response) {
-    // TODO solution goes here
-    
     // You probably want to decode the response points and the masked query
     // then unmask the query using global.mask
-    // and check if the unmasked query is equal to any of the points.
-    // ...
-    
+    // and check if the unmasked query is equal to any of the points. (step 7)
+    const maskedPoint = oprf.decodePoint(response.maskedQuery, 'ASCII');
+    const unmaskedPoint = oprf.unmaskPoint(maskedPoint, global.mask);
+
+    const unmaskedPasswd = response.maskedPoints.map(function(e){
+      return oprf.decodePoint(e, 'ASCII');
+    });
+
+    console.log("Test: ", unmaskedPoint);
     // return true if the password is ok, false if it is one of the bad passwords.
+    return unmaskedPasswd.every((e) => { // (step 8)
+      console.log("vs: ", e, " ", pointsEqual(e, unmaskedPoint));
+      if(pointsEqual(e, unmaskedPoint)) {return false};
+      return true;
+    });
 }
 
 // Start the server

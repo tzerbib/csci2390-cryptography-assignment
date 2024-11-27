@@ -34,15 +34,25 @@ function psi(socket, data) {
         return oprf.hashToPoint(password);
     });
 
+    // Make a random mask. (step 2)
+    const mask = oprf.generateRandomScalar();
 
-    // You probably want to mask the query and the password points
-    // and return them back to the client.
-    // ...
+    // Masking the point and the password (step 5)
+    const maskedPoint = oprf.scalarMult(query, mask);
+    const maskedPasswd = points.map(function(psw){
+      return oprf.scalarMult(psw, mask);
+    });
 
-    // Send masked query and points to client.
+    const encodedPasswd = maskedPasswd.map(function(p){
+      return oprf.encodePoint(p, 'ASCII');
+    });
+
+    console.log(maskedPasswd);
+
+    // Send masked query and points to client. (step 6)
     return {
-        // maskedQuery: encoded masked query,
-        // maskedPoints: encoded masked points
+      maskedQuery: oprf.encodePoint(maskedPoint, 'ASCII'),
+      maskedPoints: encodedPasswd
     };
  
 }
