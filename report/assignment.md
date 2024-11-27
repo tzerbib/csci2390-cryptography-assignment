@@ -130,5 +130,32 @@ The client sends one point over the network, while the server sends back
 this point, as well as all the ones corresponding to the stored password.
 
 
+> *Question 5: Hypothetically, if the client wanted to check several passwords.
+> It can execute the protocol several times, once per password.
+> This seems inefficient. Can you come up with some small modification
+> to allow the clients to check all these passwords in one batch?
+> How much computation and communication is needed for your modified protocol
+> vs running the original protocol multiple times?  
+> Hint: Start by assuming the client has exactly two passwords.  
+> Hint 2: Start with modifying the protocol to reveal whether any of
+> the two clients passwords are bad.  
+> Hint 3: Now, try to make the protocol reveal *which* of the passwords are bad,
+> if any.  
+> Hint 4: Generalize to more than two passwords!*
 
+If the client were to check several passwords by calling the function multiple
+times, even if the server only computed the hashes and masks for
+its stored passwords once, those would still be sent for every request.
 
+Instead, we can modify the protocol to accept an array of passwords.
+The protocol would mainly be the same (every time that something initially
+happened on the tested password, it now has to happen to all passwords
+of the array).
+
+To be able to know which password is faulty in case our PIS returns true,
+we can either rely on the fact that the server sends the salted passwords
+in the same order he reveived them, or have the server send back a dictionnary
+where the keys are the unsalted passwords that the server received
+(the passwords as masked by the client).
+The client can them simply remask the passwords he wanted to try,
+and compare that to the keys, to know which entry corresponds to which password.

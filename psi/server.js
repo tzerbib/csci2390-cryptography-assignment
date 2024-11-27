@@ -11,7 +11,7 @@ function startServer() {
       function (socket) {
         console.log('connected');
         socket.on('data', function (data) {
-            const payload = psi(socket, data.toString());
+            const payload = psi(socket, JSON.parse(data));
             socket.write(JSON.stringify(payload));
         });
         socket.on('close', function () {
@@ -27,7 +27,9 @@ function startServer() {
 // Your solution goes here.
 function psi(socket, data) {
     // Decode the query point.
-    const query = oprf.decodePoint(data, 'ASCII');
+    const query = data.map(function(p) {
+      return oprf.decodePoint(p, 'ASCII');
+    });
     
     // Hash all bad passwords to a point on the elliptic curve.
     const points = PASSWORDS.map(function(password) {
@@ -38,21 +40,28 @@ function psi(socket, data) {
     const mask = oprf.generateRandomScalar();
 
     // Masking the point and the password (step 5)
-    const maskedPoint = oprf.scalarMult(query, mask);
-    const maskedPasswd = points.map(function(psw){
+    const maskedPoints = query.map(function(q){
+      return oprf.scalarMult(q, mask);
+    });
+    const maskedPasswds = points.map(function(psw){
       return oprf.scalarMult(psw, mask);
     });
 
-    const encodedPasswd = maskedPasswd.map(function(p){
+    // Encode to facilitate sending
+    const encodedPoints = maskedPoints.map(function(mp){
+      return oprf.encodePoint(mp, 'ASCII');
+    });
+
+    const encodedPasswds = maskedPasswds.map(function(p){
       return oprf.encodePoint(p, 'ASCII');
     });
 
-    console.log(maskedPasswd);
+    // console.log(maskedPasswds);
 
     // Send masked query and points to client. (step 6)
     return {
-      maskedQuery: oprf.encodePoint(maskedPoint, 'ASCII'),
-      maskedPoints: encodedPasswd
+      maskedQuery: encodedPoints,
+      maskedPoints: encodedPasswds
     };
  
 }

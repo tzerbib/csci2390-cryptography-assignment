@@ -4,8 +4,8 @@ const OPRF = require('oprf');
 const oprf = new OPRF();
 
 // Password is a command line argument.
-const password = process.argv[2];
-console.log('Checking if "' + password + '" is bad');
+const passwords = process.argv.slice(2);
+console.log('Checking if "' + passwords + '" is bad');
 
 // Helper function to check if two elliptic curve points are equal.
 function pointsEqual(point1, point2) {
@@ -28,9 +28,9 @@ function startClient() {
     socket.connect(9009);
     
     // Prepare query.
-    const query = makeQuery(password);
+    const query = makeQuery(passwords);
     console.log(query);
-    socket.write(query);
+    socket.write(JSON.stringify(query));
     socket.on('data', function (data) {
         if (handleResponse(JSON.parse(data))) {
             console.log('Good password!');
@@ -42,7 +42,7 @@ function startClient() {
 }
 
 // Make PSI query: this part is provided for you.
-function makeQuery(password) {
+function makeQuery(passwords) {
     // Make the mask a global variable so you can use it in handleResponse() too
     global.mask;
     
@@ -50,11 +50,20 @@ function makeQuery(password) {
     global.mask = oprf.generateRandomScalar();
     
     // Hash the password to an elliptic curve point, then mask it.
-    const point = oprf.hashToPoint(password); // (step 1)
-    const maskedPoint = oprf.scalarMult(point, global.mask); // (step 3)
+    const points = passwords.map(function(pwd){ // (step 1)
+      return oprf.hashToPoint(pwd);
+    });
+    // (step 3)
+    const maskedPoints = points.map(function(pt) {
+      return oprf.scalarMult(pt, global.mask);
+    });
     
     // Encode the point as a string so it can be sent to server easily.
-    return oprf.encodePoint(maskedPoint, 'ASCII');
+    const encodedPts = maskedPoints.map(function(mp) {
+      return oprf.encodePoint(mp, 'ASCII');
+    });
+
+    return encodedPts;
 }
 
 // Handle the response.
@@ -63,20 +72,36 @@ function handleResponse(response) {
     // You probably want to decode the response points and the masked query
     // then unmask the query using global.mask
     // and check if the unmasked query is equal to any of the points. (step 7)
-    const maskedPoint = oprf.decodePoint(response.maskedQuery, 'ASCII');
-    const unmaskedPoint = oprf.unmaskPoint(maskedPoint, global.mask);
-
+  
+    // Decode the response
+    const maskedPoints = response.maskedQuery.map(function(ep) {
+      return oprf.decodePoint(ep, 'ASCII');
+    });
     const unmaskedPasswd = response.maskedPoints.map(function(e){
       return oprf.decodePoint(e, 'ASCII');
     });
 
-    console.log("Test: ", unmaskedPoint);
-    // return true if the password is ok, false if it is one of the bad passwords.
-    return unmaskedPasswd.every((e) => { // (step 8)
-      console.log("vs: ", e, " ", pointsEqual(e, unmaskedPoint));
-      if(pointsEqual(e, unmaskedPoint)) {return false};
-      return true;
+    // Unmask the tested and stored passwords
+    const unmaskedPoints = maskedPoints.map(function(mp){
+      return oprf.unmaskPoint(mp, global.mask);
     });
+
+    // console.log("Test: ", unmaskedPoints);
+    
+    let correct = true;
+    for(let i = 0; i<passwords.length; ++i){
+      correct = unmaskedPasswd.every((e) => { // (step 8)
+        // console.log(passwords[i], " vs: ", e, " ", pointsEqual(e, unmaskedPoints[i]));
+        if(pointsEqual(e, unmaskedPoints[i])) {return false};
+        return true;
+      });
+      if(!correct) {
+        console.log('Password "' + passwords[i] + '" is unsafe!');
+        break;
+      }
+    }
+    // return true if the password is ok, false if it is one of the bad passwords.
+    return correct;
 }
 
 // Start the server
